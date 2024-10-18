@@ -53,6 +53,7 @@ class AlertManager(component.Component):
             | lt.alert.category_t.ip_block_notification
             | lt.alert.category_t.performance_warning
             | lt.alert.category_t.file_progress_notification
+            | lt.alert.category_t.piece_progress_notification
         )
 
         self.session.apply_settings({'alert_mask': alert_mask})

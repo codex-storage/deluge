@@ -138,3 +138,6 @@ def start_daemon(skip_start=False):
     return run_profiled(
         run_daemon, options, output_file=options.profile, do_profile=options.profile
     )
+
+if __name__ == '__main__':
+    start_daemon()

@@ -34,6 +34,7 @@ from deluge.core.authmanager import (
 )
 from deluge.core.eventmanager import EventManager
 from deluge.core.filtermanager import FilterManager
+from deluge.core.metrics import Metrics
 from deluge.core.pluginmanager import PluginManager
 from deluge.core.preferencesmanager import PreferencesManager
 from deluge.core.rpcserver import export
@@ -138,6 +139,7 @@ class Core(component.Component):
         self.torrentmanager = TorrentManager()
         self.filtermanager = FilterManager(self)
         self.authmanager = AuthManager()
+        self.metrics = Metrics(self)
 
         # New release check information
         self.new_release = None
@@ -199,6 +201,9 @@ class Core(component.Component):
         self.session_status_timer = task.LoopingCall(self.session.post_session_stats)
         self.alertmanager.register_handler(
             'session_stats', self._on_alert_session_stats
+        )
+        self.alertmanager.register_handler(
+            'piece_finished', self.metrics.handle_alert
         )
         self.session_rates_timer_interval = 2
         self.session_rates_timer = task.LoopingCall(self._update_session_rates)
