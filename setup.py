@@ -550,6 +550,7 @@ install_requires = [
     "pywin32; sys_platform == 'win32'",
     "certifi; sys_platform == 'win32'",
     'zope.interface',
+    'prometheus-client>=0.21.0',
 ]
 extras_require = {
     'all': [
