@@ -73,6 +73,7 @@ def main():
 
     defaults = copy.deepcopy(DEFAULT_PREFS)
 
+    defaults['random_port'] = False
     defaults['listen_random_port'] = None
     defaults['listen_interface'] = options['DELUGE_EXTERNAL_IP']
     defaults['outgoing_interface'] = options['DELUGE_EXTERNAL_IP']
