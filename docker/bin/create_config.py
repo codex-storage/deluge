@@ -8,6 +8,7 @@ from dataclasses import dataclass
 from typing import Optional, Dict
 
 from deluge.configmanager import ConfigManager, set_config_dir
+from deluge.core.authmanager import AuthManager
 from deluge.core.preferencesmanager import DEFAULT_PREFS
 
 
@@ -108,9 +109,19 @@ def main():
     defaults['torrentfiles_location'] = options['DELUGE_TORRENTFILE_DIR']
     defaults['plugins_location'] = options['DELUGE_PLUGINS_DIR']
 
-
+    # Create default config.
     manager = ConfigManager('core.conf', defaults=defaults)
     manager.save()
+
+    # Create user.
+    auth_manager = AuthManager()
+    auth_manager.start()
+    auth_manager.create_account(
+        username=options['DELUGE_DAEMON_USERNAME'],
+        password=options['DELUGE_DAEMON_PASSWORD'],
+        authlevel='ADMIN',
+    )
+    auth_manager.update()
 
 
 if __name__ == '__main__':
