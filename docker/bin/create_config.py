@@ -31,8 +31,23 @@ OPTIONS = [
     ),
     ConfigOption(
         'DELUGE_TORRENTFILE_DIR',
-        default='/var/lib/deluge/torrentfiles',
+        default='/var/lib/deluge/downloads',
         description='Directory where known torrent files should be stored',
+    ),
+    ConfigOption(
+        'DELUGE_PLUGINS_DIR',
+        default='/var/lib/deluge/plugins',
+        description='Directory where Deluge plugins should be stored',
+    ),
+    ConfigOption(
+        'DELUGE_DAEMON_USERNAME',
+        default='user',
+        description='Deluge daemon username',
+    ),
+    ConfigOption(
+        'DELUGE_DAEMON_PASSWORD',
+        default='password',
+        description='Deluge daemon password',
     ),
     ConfigOption(
         name='DELUGE_RPC_PORT',
@@ -73,14 +88,26 @@ def main():
 
     defaults = copy.deepcopy(DEFAULT_PREFS)
 
+    # No DHT or we may inadvertently join the global DHT
+    defaults['dht'] = False
+
+    # Allow the daemon to be driven from other IPs.
+    defaults['allow_remote'] = True
+
+    # Pin ports and interfaces.
     defaults['random_port'] = False
     defaults['listen_random_port'] = None
     defaults['listen_interface'] = options['DELUGE_EXTERNAL_IP']
     defaults['outgoing_interface'] = options['DELUGE_EXTERNAL_IP']
     defaults['daemon_port'] = int(options['DELUGE_RPC_PORT'])
-    defaults['download_location'] = options['DELUGE_DOWNLOAD_DIR']
-    defaults['torrentfiles_location'] = options['DELUGE_TORRENTFILE_DIR']
     defaults['listen_ports'] = [int(p) for p in options['DELUGE_LISTEN_PORTS'].split(',')]
+
+    # File and plugin locations.
+    defaults['download_location'] = options['DELUGE_DOWNLOAD_DIR']
+    defaults['move_completed_path'] = options['DELUGE_DOWNLOAD_DIR']
+    defaults['torrentfiles_location'] = options['DELUGE_TORRENTFILE_DIR']
+    defaults['plugins_location'] = options['DELUGE_PLUGINS_DIR']
+
 
     manager = ConfigManager('core.conf', defaults=defaults)
     manager.save()

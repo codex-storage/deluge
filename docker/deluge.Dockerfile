@@ -3,8 +3,9 @@ FROM continuumio/miniconda3:24.9.2-0
 
 ENV DELUGE_APP=/opt/deluge
 ENV DELUGE_CONFIG_DIR=/var/lib/deluge
-ENV DELUGE_DOWNLOAD_DIR=/var/lib/deluge/download
-ENV DELUGE_TORRENTFILE_DIR=/var/lib/deluge/torrents
+ENV DELUGE_DOWNLOAD_DIR=/var/lib/deluge/downloads
+ENV DELUGE_TORRENTFILE_DIR=/var/lib/deluge/downloads
+ENV DELUGE_PLUGINS_DIR=/var/lib/deluge/plugins
 ENV DELUGE_RPC_PORT=6890
 ENV DELUGE_LISTEN_PORTS=6891,6892
 
