@@ -28,6 +28,7 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Setup Docker Metadata
+        id: meta
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.DOCKER_REPO }}
