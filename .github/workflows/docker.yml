@@ -31,12 +31,16 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.DOCKER_REPO }}
+          flavor: |
+            latest=true
+          tags: |
+            type=sha
 
       - name: Build and Push
         uses: docker/build-push-action@v6
         with:
           context: .
           file: ${{ env.DOCKER_FILE }}
-          tags: |
-            latest=true
-            type=sha
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
