@@ -10,4 +10,4 @@ fi
 
 cd "${DELUGE_APP}"
 python ./docker/bin/create_config.py
-python -m deluge.core.daemon_entry -c "${DELUGE_CONFIG_DIR}" -d -L debug
+python -m deluge.core.daemon_entry -c "${DELUGE_CONFIG_DIR}" -d -L "${DELUGE_LOG_LEVEL}"
