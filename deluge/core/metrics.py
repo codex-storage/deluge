@@ -58,6 +58,6 @@ class Metrics:
             })
         )
 
-        logger.debug(self._buffer.getvalue())
+        logger.info(self._buffer.getvalue())
         self._buffer.truncate(0)
         self._buffer.seek(0)
