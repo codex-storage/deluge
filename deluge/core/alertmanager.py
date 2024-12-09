@@ -41,7 +41,7 @@ class AlertManager(component.Component):
         self.session = component.get('Core').session
 
         # Increase the alert queue size so that alerts don't get lost.
-        self.alert_queue_size = 10000
+        self.alert_queue_size = 1000000
         self.set_alert_queue_size(self.alert_queue_size)
 
         alert_mask = (

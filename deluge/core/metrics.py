@@ -27,6 +27,7 @@ class Metrics:
             fieldnames=['metric', 'timestamp', 'labels', 'value'],
         )
         self.log_writer.writeheader()
+        self._flush_to_log()
         core.session.post_dht_stats()
 
     def handle_alert(self, alert):
@@ -57,7 +58,9 @@ class Metrics:
                 'value': alert.piece_index,
             })
         )
+        self._flush_to_log()
 
+    def _flush_to_log(self):
         logger.info(self._buffer.getvalue())
         self._buffer.truncate(0)
         self._buffer.seek(0)
