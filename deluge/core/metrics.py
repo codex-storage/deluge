@@ -1,17 +1,12 @@
 import json
 import logging
+import os
 import re
-import sys
 from datetime import datetime, timezone
-from typing import Optional
 
 from prometheus_client import Counter
 
 logger = logging.getLogger(__name__)
-for handler in logger.handlers:
-    logger.removeHandler(handler)
-
-logger.addHandler(logging.StreamHandler(sys.stdout))
 
 torrent_pieces_downloaded = Counter(
     name='deluge_torrent_pieces_downloaded',
@@ -20,6 +15,7 @@ torrent_pieces_downloaded = Counter(
 )
 
 NID = re.compile(r'\(([a-zA-Z0-9]+)\)')
+
 
 def metric_record(
         node: str,
@@ -32,14 +28,16 @@ def metric_record(
         'timestamp': datetime.now(timezone.utc).isoformat(),
         'name': name,
         'value': value,
-        'node': node if node is not None else '',
+        'node': node,
         'torrent_name': torrent_name,
     })
     return f'>>{record}'
 
+
 class Metrics:
     def __init__(self, core: 'deluge.core.Core'):
-        self.peer_id: Optional[str] = None
+        # This is hack, we should add it to the deluge config.
+        self.node_id = os.environ.get('DELUGE_NODE_ID', '<unset>')
         core.session.post_dht_stats()
 
     def handle_alert(self, alert):
@@ -47,21 +45,12 @@ class Metrics:
         handler = getattr(self, f'_{alert_type}', lambda _: None)
         handler(alert)
 
-    def _dht_stats(self, alert):
-        # Since the node id is not exposed in the alert by libtorrent's Python binding,
-        # we need to extract the digest from the string representation.
-        result = NID.search(alert.message())
-        if result is None:
-            raise Exception('Could not extract node id from DHT stats alert')
-        self.peer_id = result.group(1)
-
     def _piece_finished(self, alert):
         logger.info(
             metric_record(
-                node=self.peer_id,
+                node=self.node_id,
                 name='deluge_piece_downloaded',
                 torrent_name=alert.torrent_name,
                 value=alert.piece_index,
             )
         )
-
