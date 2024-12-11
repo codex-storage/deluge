@@ -1,13 +1,17 @@
+import json
 import logging
 import re
-from csv import DictWriter
+import sys
 from datetime import datetime, timezone
-from io import StringIO
 from typing import Optional
 
 from prometheus_client import Counter
 
-logger = logging.getLogger('M')
+logger = logging.getLogger(__name__)
+for handler in logger.handlers:
+    logger.removeHandler(handler)
+
+logger.addHandler(logging.StreamHandler(sys.stdout))
 
 torrent_pieces_downloaded = Counter(
     name='deluge_torrent_pieces_downloaded',
@@ -17,17 +21,25 @@ torrent_pieces_downloaded = Counter(
 
 NID = re.compile(r'\(([a-zA-Z0-9]+)\)')
 
+def metric_record(
+        node: str,
+        name: str,
+        torrent_name: str,
+        value: int,
+):
+    record = json.dumps({
+        'entry_type': 'deluge_torrent_download',
+        'timestamp': datetime.now(timezone.utc).isoformat(),
+        'name': name,
+        'value': value,
+        'node': node if node is not None else '',
+        'torrent_name': torrent_name,
+    })
+    return f'>>{record}'
 
 class Metrics:
     def __init__(self, core: 'deluge.core.Core'):
         self.peer_id: Optional[str] = None
-        self._buffer = StringIO()
-        self.log_writer = DictWriter(
-            f=self._buffer,
-            fieldnames=['metric', 'timestamp', 'labels', 'value'],
-        )
-        self.log_writer.writeheader()
-        self._flush_to_log()
         core.session.post_dht_stats()
 
     def handle_alert(self, alert):
@@ -44,23 +56,12 @@ class Metrics:
         self.peer_id = result.group(1)
 
     def _piece_finished(self, alert):
-        labels = {
-            'peer_id': self.peer_id if self.peer_id else '<unknown>',
-            'torrent_name': alert.torrent_name,
-        }
-
-        torrent_pieces_downloaded.labels(**labels).inc(1)
-        self.log_writer.writerow(
-            dict({
-                'timestamp': datetime.now(timezone.utc).isoformat(),
-                'metric': 'deluge_torrent_pieces_downloaded',
-                'labels': ','.join(labels.values()),
-                'value': alert.piece_index,
-            })
+        logger.info(
+            metric_record(
+                node=self.peer_id,
+                name='deluge_piece_downloaded',
+                torrent_name=alert.torrent_name,
+                value=alert.piece_index,
+            )
         )
-        self._flush_to_log()
 
-    def _flush_to_log(self):
-        logger.info(self._buffer.getvalue())
-        self._buffer.truncate(0)
-        self._buffer.seek(0)
