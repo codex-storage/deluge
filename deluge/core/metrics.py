@@ -1,20 +1,10 @@
 import json
 import logging
 import os
-import re
+
 from datetime import datetime, timezone
 
-from prometheus_client import Counter
-
 logger = logging.getLogger(__name__)
-
-torrent_pieces_downloaded = Counter(
-    name='deluge_torrent_pieces_downloaded',
-    documentation='Number of pieces downloaded for a torrent',
-    labelnames=['peer_id', 'torrent_name']
-)
-
-NID = re.compile(r'\(([a-zA-Z0-9]+)\)')
 
 
 def metric_record(
@@ -24,12 +14,12 @@ def metric_record(
         value: int,
 ):
     record = json.dumps({
-        'entry_type': 'deluge_torrent_download',
+        'entry_type': 'download_metric',
         'timestamp': datetime.now(timezone.utc).isoformat(),
         'name': name,
         'value': value,
         'node': node,
-        'torrent_name': torrent_name,
+        'dataset_name': torrent_name,
     })
     return f'>>{record}'
 
