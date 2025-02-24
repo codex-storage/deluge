@@ -28,9 +28,15 @@ RUN conda create -y -n 'deluge' python=3.8
 RUN conda init bash
 RUN echo "conda activate deluge" > ~/.bashrc
 
-RUN conda install -y anaconda::py-boost\
-    anaconda::gxx_linux-64\
-    anaconda:openssl
+RUN if [ $(uname -m) = "aarch64" ]; then \
+      conda install -y anaconda::py-boost \
+        anaconda::gxx_linux-aarch64 \
+        anaconda:openssl; \
+    else \
+      conda install -y anaconda::py-boost \
+        anaconda::gxx_linux-64 \
+        anaconda:openssl; \
+    fi
 
 COPY . ./
 
